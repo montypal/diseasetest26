@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Detectives: 2x2 Deduction & Construction</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #16a085;
+            --accent: #d35400;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --bg-color: #ecf0f1;
+            --text-color: #34495e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #score-board {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary);
+            z-index: 1000;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 850px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        h1 { margin-top: 0; color: var(--primary); font-size: 1.8rem; }
+        .progress { color: #7f8c8d; margin-bottom: 20px; font-weight: 500; font-size: 0.95rem; }
+        #question-text { font-size: 1.25rem; line-height: 1.6; margin-bottom: 30px; font-weight: 500; }
+        
+        .options-grid { display: flex; flex-direction: column; gap: 12px; }
+        
+        button.option-btn {
+            background: white;
+            border: 2px solid #bdc3c7;
+            color: var(--text-color);
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        button.option-btn:hover:not(:disabled) {
+            border-color: var(--secondary);
+            background-color: #e8f8f5;
+        }
+
+        button.option-btn.correct { background-color: #d5f5e3 !important; border-color: var(--success) !important; color: #145a32 !important; }
+        button.option-btn.wrong { background-color: #fadbd8 !important; border-color: var(--danger) !important; color: #7b241c !important; }
+        button.option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+
+        #feedback-area {
+            margin-top: 25px;
+            padding: 25px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.6;
+            font-size: 1.05rem;
+            background-color: #f8f9f9;
+            border: 1px solid #d0d3d4;
+        }
+
+        .feedback-title { font-weight: bold; margin-bottom: 15px; font-size: 1.2rem; }
+        .success-text { color: var(--success); }
+        .danger-text { color: var(--danger); }
+
+        /* 2x2 Table Styling */
+        .epi-table {
+            width: 100%;
+            max-width: 500px;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .epi-table th, .epi-table td {
+            border: 1px solid #bdc3c7;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .epi-table th { background-color: #ecf0f1; color: var(--primary); font-weight: bold; }
+        .epi-table td.highlight { background-color: #e8f8f5; font-weight: bold; color: var(--secondary); }
+        .epi-table td.deduced { background-color: #fcf3cf; font-weight: bold; color: var(--accent); }
+
+        .controls { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+        
+        #next-btn {
+            background: var(--secondary); color: white; border: none; padding: 12px 24px;
+            border-radius: 8px; font-size: 1rem; cursor: pointer; display: none; font-weight: 600;
+        }
+        #next-btn:hover { background: #117a65; }
+
+        #end-btn { background: transparent; border: none; color: #95a5a6; text-decoration: underline; cursor: pointer; font-size: 0.95rem; }
+        #end-btn:hover { color: var(--text-color); }
+
+        .hidden { display: none !important; }
+        .result-score { font-size: 4rem; color: var(--secondary); font-weight: bold; margin: 20px 0; }
+        #restart-btn { background: var(--success); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="score-board">Score: <span id="current-score">0</span> / 20</div>
+
+    <div class="container" id="quiz-container">
+        <h1>Advanced 2x2 Deduction</h1>
+        <div class="progress" id="progress-text">Question 1 of 20</div>
+        <div id="question-text">Loading question...</div>
+        <div id="options-container" class="options-grid"></div>
+        <div id="feedback-area">
+            <div class="feedback-title" id="feedback-title"></div>
+            <div id="feedback-text"></div>
+        </div>
+        <div class="controls">
+            <button id="end-btn" onclick="endTest()">Stop Test & View Score</button>
+            <button id="next-btn" onclick="loadNextQuestion()">Next Question &rarr;</button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="result-container" style="text-align: center;">
+        <h1>Test Complete</h1>
+        <p style="font-size: 1.2rem; color: #34495e;">Here is your final score:</p>
+        <div class="result-score" id="final-score-display">0 / 20</div>
+        <div id="final-message" style="font-size: 1.1rem; margin-bottom: 30px;"></div>
+        <button id="restart-btn" onclick="location.reload()">Restart Quiz</button>
+    </div>
+
+<script>
+    const quizData = [
+        {
+            q: "A screening test is given to 500 people. You know that 100 of these people actually have the disease. The test flagged 120 people total as positive. However, 30 of those positive results were given to perfectly healthy people. What is the sensitivity of the test?",
+            options: ["75%", "80%", "90%", "95%"], a: 2,
+            exp: `<b>Step 1: Deduction</b><br>
+                  Total Sick = 100.<br>
+                  Total Positive Tests = 120.<br>
+                  False Positives (Healthy, but
