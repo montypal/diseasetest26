@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disease Detectives: 2x2 Deduction & Construction</title>
+    <title>Disease Detectives: 40-Question Advanced Deduction</title>
     <style>
         :root {
             --primary: #2c3e50;
@@ -92,8 +92,6 @@
         }
 
         .feedback-title { font-weight: bold; margin-bottom: 15px; font-size: 1.2rem; }
-        .success-text { color: var(--success); }
-        .danger-text { color: var(--danger); }
 
         /* 2x2 Table Styling */
         .epi-table {
@@ -112,8 +110,7 @@
         }
 
         .epi-table th { background-color: #ecf0f1; color: var(--primary); font-weight: bold; }
-        .epi-table td.highlight { background-color: #e8f8f5; font-weight: bold; color: var(--secondary); }
-        .epi-table td.deduced { background-color: #fcf3cf; font-weight: bold; color: var(--accent); }
+        .epi-table td.highlight { background-color: #fcf3cf; font-weight: bold; color: var(--accent); }
 
         .controls { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
         
@@ -133,11 +130,11 @@
 </head>
 <body>
 
-    <div id="score-board">Score: <span id="current-score">0</span> / 20</div>
+    <div id="score-board">Score: <span id="current-score">0</span> / 40</div>
 
     <div class="container" id="quiz-container">
         <h1>Advanced 2x2 Deduction</h1>
-        <div class="progress" id="progress-text">Question 1 of 20</div>
+        <div class="progress" id="progress-text">Question 1 of 40</div>
         <div id="question-text">Loading question...</div>
         <div id="options-container" class="options-grid"></div>
         <div id="feedback-area">
@@ -153,17 +150,192 @@
     <div class="container hidden" id="result-container" style="text-align: center;">
         <h1>Test Complete</h1>
         <p style="font-size: 1.2rem; color: #34495e;">Here is your final score:</p>
-        <div class="result-score" id="final-score-display">0 / 20</div>
+        <div class="result-score" id="final-score-display">0 / 40</div>
         <div id="final-message" style="font-size: 1.1rem; margin-bottom: 30px;"></div>
         <button id="restart-btn" onclick="location.reload()">Restart Quiz</button>
     </div>
 
 <script>
     const quizData = [
-        {
-            q: "A screening test is given to 500 people. You know that 100 of these people actually have the disease. The test flagged 120 people total as positive. However, 30 of those positive results were given to perfectly healthy people. What is the sensitivity of the test?",
-            options: ["75%", "80%", "90%", "95%"], a: 2,
-            exp: `<b>Step 1: Deduction</b><br>
-                  Total Sick = 100.<br>
-                  Total Positive Tests = 120.<br>
-                  False Positives (Healthy, but
+        { q: "A screening test is given to 500 people. You know that 100 of these people actually have the disease. The test flagged 120 people total as positive. However, 30 of those positive results were given to perfectly healthy people. What is the sensitivity of the test?", options: ["75%", "80%", "90%", "95%"], a: 2, expText: "Total Sick = 100. Total Positives = 120. False Positives (Healthy but tested +) = 30.<br><i>True Positives</i> = Total Positives (120) - False Positives (30) = 90.<br>Sensitivity = 90 / 100 = 90%.", table: { tp: 90, fp: 30, fn: 10, tn: 370, hl: 'tp' } },
+        { q: "Out of 1,000 citizens tested, 800 are completely healthy. The diagnostic machine gave a total of 150 positive readings across the whole population. Digging into the data, 50 of those positive readings belonged to healthy people. What is the specificity of the test?", options: ["81.25%", "90%", "93.75%", "95%"], a: 2, expText: "Total Healthy = 800. False Positives = 50.<br><i>True Negatives</i> = Total Healthy (800) - False Positives (50) = 750.<br>Specificity = 750 / 800 = 93.75%.", table: { tp: 100, fp: 50, fn: 100, tn: 750, hl: 'tn' } },
+        { q: "A clinic evaluates 400 patients. 100 of them are infected. The rapid test yields a total of 120 positive results. You also notice that 20 of the infected patients walked away with a negative result. What is the Positive Predictive Value (PPV)?", options: ["60%", "66.7%", "75%", "83.3%"], a: 1, expText: "Total Sick = 100. False Negatives = 20.<br><i>True Positives</i> = Total Sick (100) - False Negatives (20) = 80.<br>PPV = True Positives (80) / Total Positives (120) = 66.7%.", table: { tp: 80, fp: 40, fn: 20, tn: 260, hl: 'tp' } },
+        { q: "You test 600 people, and you know 200 of them are sick. The lab hands out 400 negative test results overall. Unfortunately, 50 of the sick people were in that negative group. What is the Negative Predictive Value (NPV)?", options: ["75%", "80%", "87.5%", "92.5%"], a: 2, expText: "Total Negative Results = 400. False Negatives = 50.<br><i>True Negatives</i> = Total Negatives (400) - False Negatives (50) = 350.<br>NPV = True Negatives (350) / Total Negatives (400) = 87.5%.", table: { tp: 150, fp: 50, fn: 50, tn: 350, hl: 'tn' } },
+        { q: "In a Cohort study of 1,000 people, 400 were exposed to a chemical. At the end of the study, 50 of the exposed people got sick. In the unexposed group, 30 people got sick. What is the Relative Risk?", options: ["1.5", "2.0", "2.5", "3.0"], a: 2, expText: "Exposed = 400. Risk in exposed = 50/400 = 0.125.<br>Unexposed = 1000 - 400 = 600. Risk in unexposed = 30/600 = 0.05.<br>RR = 0.125 / 0.05 = 2.5.", table: { tp: 50, fp: 350, fn: 30, tn: 570, hl: 'tn' } },
+        { q: "A Case-Control study examines 100 cases and 100 controls. You find that 80 of the cases were exposed to the suspected risk factor. You also find that 40 of the controls were exposed. What is the Odds Ratio?", options: ["2.0", "4.0", "6.0", "8.0"], a: 2, expText: "Cases (Sick): 80 exposed, 20 unexposed.<br>Controls (Healthy): 40 exposed, 60 unexposed.<br>OR = (80 * 60) / (20 * 40) = 4800 / 800 = 6.0.", table: { tp: 80, fp: 40, fn: 20, tn: 60, hl: 'tp' } },
+        { q: "A hospital tests 200 patients, 50 of whom are confirmed to have a disease. At the end of the day, 140 negative test results are handed out. You discover that 10 sick people were accidentally given negative results. What is the sensitivity of the test?", options: ["70%", "80%", "85%", "90%"], a: 1, expText: "Total Sick = 50. False Negatives = 10.<br><i>True Positives</i> = Total Sick (50) - False Negatives (10) = 40.<br>Sensitivity = 40 / 50 = 80%.", table: { tp: 40, fp: 20, fn: 10, tn: 130, hl: 'tp' } },
+        { q: "You evaluate 500 people. 100 of them are actually sick. The screening tool yields 350 negative results in total. You verify that 330 of those negative results belong to completely healthy people. What is the specificity?", options: ["82.5%", "85%", "90%", "94.2%"], a: 0, expText: "Total Healthy = 500 - 100 = 400. True Negatives = 330.<br>Specificity = True Negatives (330) / Total Healthy (400) = 82.5%.", table: { tp: 80, fp: 70, fn: 20, tn: 330, hl: 'tn' } },
+        { q: "Out of 800 people tested, 600 are perfectly healthy. The test spits out 250 positive results in total. Further testing reveals that 150 of those positive results were given to healthy people. What is the Positive Predictive Value?", options: ["30%", "40%", "50%", "60%"], a: 1, expText: "Total Positives = 250. False Positives = 150.<br><i>True Positives</i> = Total Positives (250) - False Positives (150) = 100.<br>PPV = True Positives (100) / Total Positives (250) = 40%.", table: { tp: 100, fp: 150, fn: 100, tn: 450, hl: 'tp' } },
+        { q: "A town tests 1,000 residents. 300 of them are infected. The health department reports 700 negative test results overall. You know that 650 of the healthy people received a negative result. What is the Negative Predictive Value?", options: ["88.5%", "90%", "92.8%", "95%"], a: 2, expText: "Total Negatives = 700. True Negatives = 650.<br>NPV = True Negatives (650) / Total Negatives (700) = 92.8%.", table: { tp: 250, fp: 50, fn: 50, tn: 650, hl: 'tn' } },
+        { q: "A Cohort study follows 500 people. 200 of them are exposed to radiation. Over time, 100 of the unexposed people get sick. Also, 100 of the exposed people get sick. What is the Relative Risk?", options: ["1.0", "1.5", "2.0", "2.5"], a: 1, expText: "Exposed = 200. Risk in exposed = 100/200 = 0.5.<br>Unexposed = 500 - 200 = 300. Risk in unexposed = 100/300 = 0.333.<br>RR = 0.5 / 0.333 = 1.5.", table: { tp: 100, fp: 100, fn: 100, tn: 200, hl: 'tn' } },
+        { q: "In a Case-Control study with 150 cases and 150 controls, there was a total of 180 people exposed to the risk factor across both groups. You know that 120 of the exposed people were cases. What is the Odds Ratio?", options: ["3.0", "4.0", "6.0", "8.0"], a: 2, expText: "Total Exposed = 180. Exposed Cases = 120.<br><i>Exposed Controls</i> = 180 - 120 = 60.<br>Cases: 120 Exp, 30 Unexp. Controls: 60 Exp, 90 Unexp.<br>OR = (120 * 90) / (30 * 60) = 10800 / 1800 = 6.0.", table: { tp: 120, fp: 60, fn: 30, tn: 90, hl: 'fp' } },
+        { q: "You test 300 people total. The machine gives exactly 100 positive results. You find out that 60 of those positive results belong to sick people. You also know that 200 people in the total population are healthy. What is the sensitivity?", options: ["50%", "60%", "70%", "80%"], a: 1, expText: "Total Population = 300. Healthy = 200. Therefore, Total Sick = 100.<br>True Positives = 60.<br>Sensitivity = True Positives (60) / Total Sick (100) = 60%.", table: { tp: 60, fp: 40, fn: 40, tn: 160, hl: 'tp' } },
+        { q: "A lab processes 400 tests and hands out 300 negative results. You find out that 20 of those negative results went to sick people. You know that 100 people in the total population are sick. What is the specificity?", options: ["85%", "90%", "93.3%", "95%"], a: 2, expText: "Total Population = 400. Sick = 100. Therefore, Total Healthy = 300.<br>False Negatives = 20. <i>True Negatives</i> = Total Negatives (300) - False Negatives (20) = 280.<br>Specificity = True Negatives (280) / Total Healthy (300) = 93.3%.", table: { tp: 80, fp: 20, fn: 20, tn: 280, hl: 'tn' } },
+        { q: "There are 150 sick people and 250 healthy people in a study. The test returns 100 positive results overall. 40 of those positive results are false alarms given to healthy people. What is the Positive Predictive Value?", options: ["50%", "60%", "70%", "80%"], a: 1, expText: "Total Positives = 100. False Positives = 40.<br><i>True Positives</i> = 100 - 40 = 60.<br>PPV = True Positives (60) / Total Positives (100) = 60%.", table: { tp: 60, fp: 40, fn: 90, tn: 210, hl: 'tp' } },
+        { q: "Out of 500 people, a test gives 100 positive results and 400 negative results. 350 of the people tested are completely healthy. 50 of the positive results were given to healthy people. What is the Negative Predictive Value?", options: ["70%", "75%", "80%", "85%"], a: 1, expText: "Total Healthy = 350. False Positives = 50.<br><i>True Negatives</i> = Total Healthy (350) - False Positives (50) = 300.<br>NPV = True Negatives (300) / Total Negatives (400) = 75%.", table: { tp: 50, fp: 50, fn: 100, tn: 300, hl: 'tn' } },
+        { q: "In a Cohort study of 800 people, 500 are exposed to a toxin. At the end, 400 of the exposed people remain perfectly healthy. In the unexposed group, 30 people get sick. What is the Relative Risk?", options: ["1.5", "2.0", "3.0", "4.0"], a: 1, expText: "Exposed = 500. Healthy Exposed = 400. Therefore, Sick Exposed = 100.<br>Risk in exposed = 100/500 = 0.2.<br>Unexposed = 800 - 500 = 300. Risk in unexposed = 30/300 = 0.1.<br>RR = 0.2 / 0.1 = 2.0.", table: { tp: 100, fp: 400, fn: 30, tn: 270, hl: 'tp' } },
+        { q: "A Case-Control study looks at 200 cases and 200 controls. You find that 50 of the cases were NEVER exposed to the risk factor. You also find that 150 of the controls were NEVER exposed. What is the Odds Ratio?", options: ["4.0", "6.0", "9.0", "12.0"], a: 2, expText: "Cases: 50 unexposed, meaning 150 exposed.<br>Controls: 150 unexposed, meaning 50 exposed.<br>OR = (150 * 150) / (50 * 50) = 22500 / 2500 = 9.0.", table: { tp: 150, fp: 50, fn: 50, tn: 150, hl: 'tp' } },
+        { q: "A test generates 200 positive results and 300 negative results. The test missed 50 sick people (giving them negative results). It also gave 50 healthy people positive results. What is the sensitivity?", options: ["60%", "70%", "75%", "80%"], a: 2, expText: "Total Positives = 200. False Positives = 50. <i>True Positives</i> = 150.<br>False Negatives = 50.<br>Total Sick = TP (150) + FN (50) = 200.<br>Sensitivity = 150 / 200 = 75%.", table: { tp: 150, fp: 50, fn: 50, tn: 250, hl: 'tp' } },
+        { q: "A test generates 150 positive results and 350 negative results. 50 sick people received negative results. 100 sick people received positive results. What is the specificity?", options: ["80%", "82.5%", "85.7%", "90%"], a: 2, expText: "Total Positives = 150. True Positives = 100. Therefore, False Positives = 50.<br>Total Negatives = 350. False Negatives = 50. Therefore, True Negatives = 300.<br>Total Healthy = FP (50) + TN (300) = 350.<br>Specificity = 300 / 350 = 85.7%.", table: { tp: 100, fp: 50, fn: 50, tn: 300, hl: 'tn' } },
+        { q: "You test 1,000 people. 200 of them are actually sick. The test gives 750 negative results overall. You know that 50 of those negative results went to sick people. What is the Positive Predictive Value?", options: ["50%", "60%", "70%", "80%"], a: 1, expText: "Total Population = 1000. Negatives = 750. Therefore, Total Positives = 250.<br>Total Sick = 200. False Negatives = 50. <i>True Positives</i> = 200 - 50 = 150.<br>PPV = True Positives (150) / Total Positives (250) = 60%.", table: { tp: 150, fp: 100, fn: 50, tn: 700, hl: 'tp' } },
+        { q: "You test 1,000 people, and 800 of them are perfectly healthy. The test hands out 200 positive results total. 100 of those positive results were given to healthy people. What is the Negative Predictive Value?", options: ["80%", "85%", "87.5%", "90%"], a: 2, expText: "Total Population = 1000. Positives = 200. Therefore, Total Negatives = 800.<br>Total Healthy = 800. False Positives = 100. <i>True Negatives</i> = 800 - 100 = 700.<br>NPV = True Negatives (700) / Total Negatives (800) = 87.5%.", table: { tp: 100, fp: 100, fn: 100, tn: 700, hl: 'tn' } },
+        { q: "A Cohort study of 1,000 people finds 200 people get sick overall. 400 people were exposed to the risk factor. Exactly 100 of the exposed people got sick. What is the Relative Risk?", options: ["1.5", "2.0", "2.5", "3.0"], a: 0, expText: "Exposed = 400. Sick Exposed = 100. Risk in exposed = 100/400 = 0.25.<br>Total Sick = 200. Therefore, Sick Unexposed = 200 - 100 = 100.<br>Unexposed = 1000 - 400 = 600. Risk in unexposed = 100/600 = 0.166.<br>RR = 0.25 / 0.166 = 1.5.", table: { tp: 100, fp: 300, fn: 100, tn: 500, hl: 'fn' } },
+        { q: "A Case-Control study matches 50 cases to 50 controls. In the entire study, only 40 people were NEVER exposed. You find that 10 of those unexposed people were cases. What is the Odds Ratio?", options: ["3.0", "4.0", "5.0", "6.0"], a: 3, expText: "Total Unexposed = 40. Unexposed Cases = 10. Therefore, Unexposed Controls = 30.<br>Total Cases = 50. Exposed Cases = 50 - 10 = 40.<br>Total Controls = 50. Exposed Controls = 50 - 30 = 20.<br>OR = (40 * 30) / (10 * 20) = 1200 / 200 = 6.0.", table: { tp: 40, fp: 20, fn: 10, tn: 30, hl: 'tn' } },
+        { q: "You test 600 people, and 400 are healthy. The test hands out 150 positive results. 50 of those positive results are false alarms on healthy people. What is the sensitivity?", options: ["40%", "50%", "60%", "70%"], a: 1, expText: "Total Sick = 600 - 400 = 200.<br>Total Positives = 150. False Positives = 50.<br><i>True Positives</i> = 150 - 50 = 100.<br>Sensitivity = 100 / 200 = 50%.", table: { tp: 100, fp: 50, fn: 100, tn: 350, hl: 'tp' } },
+        { q: "A test on 700 people (200 of whom are sick) returns 400 negative results. 50 sick people received a negative result. What is the specificity?", options: ["60%", "65%", "70%", "75%"], a: 2, expText: "Total Healthy = 700 - 200 = 500.<br>Total Negatives = 400. False Negatives = 50.<br><i>True Negatives</i> = 400 - 50 = 350.<br>Specificity = 350 / 500 = 70%.", table: { tp: 150, fp: 150, fn: 50, tn: 350, hl: 'tn' } },
+        { q: "Out of 500 people, 400 are healthy. The test yields 120 positive results. 80 of the healthy people accidentally received a positive result. What is the Positive Predictive Value?", options: ["25%", "33.3%", "40%", "50%"], a: 1, expText: "Total Positives = 120. False Positives = 80.<br><i>True Positives</i> = 120 - 80 = 40.<br>PPV = True Positives (40) / Total Positives (120) = 33.3%.", table: { tp: 40, fp: 80, fn: 60, tn: 320, hl: 'tp' } },
+        { q: "A test on 800 people (200 sick) yields 600 negative results. 100 sick people received negative results. What is the Negative Predictive Value?", options: ["75%", "80%", "83.3%", "88.8%"], a: 2, expText: "Total Negatives = 600. False Negatives = 100.<br><i>True Negatives</i> = 600 - 100 = 500.<br>NPV = True Negatives (500) / Total Negatives (600) = 83.3%.", table: { tp: 100, fp: 100, fn: 100, tn: 500, hl: 'tn' } },
+        { q: "A Cohort study tracks 2,000 people. 500 are exposed to a chemical. Overall, 300 people get sick. You know that 150 of the unexposed people got sick. What is the Relative Risk?", options: ["2.0", "2.5", "3.0", "4.0"], a: 2, expText: "Total Sick = 300. Sick Unexposed = 150. Therefore, Sick Exposed = 150.<br>Risk in exposed = 150 / 500 = 0.3.<br>Unexposed = 2000 - 500 = 1500. Risk in unexposed = 150 / 1500 = 0.1.<br>RR = 0.3 / 0.1 = 3.0.", table: { tp: 150, fp: 350, fn: 150, tn: 1350, hl: 'tp' } },
+        { q: "A Case-Control study matches 300 cases and 300 controls. In total, 300 people in the study were exposed. You find that 200 of the exposed people were cases. What is the Odds Ratio?", options: ["2.0", "3.0", "4.0", "5.0"], a: 2, expText: "Total Exposed = 300. Exposed Cases = 200. Therefore, Exposed Controls = 100.<br>Total Cases = 300. Unexposed Cases = 300 - 200 = 100.<br>Total Controls = 300. Unexposed Controls = 300 - 100 = 200.<br>OR = (200 * 200) / (100 * 100) = 40000 / 10000 = 4.0.", table: { tp: 200, fp: 100, fn: 100, tn: 200, hl: 'fn' } },
+        { q: "A test generates 500 positive results and 500 negative results. There are 600 healthy people in the population. The test gave 200 healthy people a false alarm. What is the sensitivity?", options: ["60%", "65%", "70%", "75%"], a: 3, expText: "Total Positives = 500. False Positives = 200. <i>True Positives</i> = 300.<br>Total Population = 1000. Healthy = 600. Therefore, Total Sick = 400.<br>Sensitivity = 300 / 400 = 75%.", table: { tp: 300, fp: 200, fn: 100, tn: 400, hl: 'tp' } },
+        { q: "A test generates 400 positive results and 600 negative results. There are 300 sick people in the population. The test missed 100 of those sick people. What is the specificity?", options: ["60%", "66.7%", "71.4%", "80%"], a: 2, expText: "Total Negatives = 600. False Negatives = 100. <i>True Negatives</i> = 500.<br>Total Population = 1000. Sick = 300. Therefore, Total Healthy = 700.<br>Specificity = 500 / 700 = 71.4%.", table: { tp: 200, fp: 200, fn: 100, tn: 500, hl: 'tn' } },
+        { q: "You test 1,000 people. 100 are sick. The test accurately clears 850 healthy people (True Negatives). You also know the test missed 10 sick people (False Negatives). What is the Positive Predictive Value?", options: ["60%", "64.3%", "70%", "75%"], a: 1, expText: "Total Sick = 100. False Negatives = 10. <i>True Positives</i> = 90.<br>Total Healthy = 900. True Negatives = 850. False Positives = 50.<br>Total Positives = TP (90) + FP (50) = 140.<br>PPV = 90 / 140 = 64.3%.", table: { tp: 90, fp: 50, fn: 10, tn: 850, hl: 'tp' } },
+        { q: "You test 1,000 people. 400 are sick. The test correctly identifies 300 of the sick people (True Positives). The test correctly clears 400 healthy people (True Negatives). What is the Negative Predictive Value?", options: ["70%", "75%", "80%", "85%"], a: 2, expText: "Total Sick = 400. True Positives = 300. False Negatives = 100.<br>Total Negatives = False Negatives (100) + True Negatives (400) = 500.<br>NPV = True Negatives (400) / Total Negatives (500) = 80%.", table: { tp: 300, fp: 200, fn: 100, tn: 400, hl: 'fn' } },
+        { q: "A Cohort study of 1,200 people has 800 unexposed individuals. In the exposed group, 200 people get sick. In the unexposed group, 700 people remain perfectly healthy. What is the Relative Risk?", options: ["2.0", "3.0", "4.0", "5.0"], a: 2, expText: "Exposed = 1200 - 800 = 400. Sick Exposed = 200. Risk in exposed = 200/400 = 0.5.<br>Unexposed = 800. Healthy Unexposed = 700. Therefore, Sick Unexposed = 100. Risk in unexposed = 100/800 = 0.125.<br>RR = 0.5 / 0.125 = 4.0.", table: { tp: 200, fp: 200, fn: 100, tn: 700, hl: 'fn' } },
+        { q: "A Case-Control study has 400 cases and 400 controls. Overall, 300 people were NEVER exposed. You find that 100 of the cases were never exposed. What is the Odds Ratio?", options: ["2.0", "3.0", "4.0", "5.0"], a: 1, expText: "Total Unexposed = 300. Unexposed Cases = 100. Therefore, Unexposed Controls = 200.<br>Total Cases = 400. Exposed Cases = 400 - 100 = 300.<br>Total Controls = 400. Exposed Controls = 400 - 200 = 200.<br>OR = (300 * 200) / (100 * 200) = 60000 / 20000 = 3.0.", table: { tp: 300, fp: 200, fn: 100, tn: 200, hl: 'tn' } },
+        { q: "Out of 1,000 people, 500 are sick. The test hands out 600 negative results. 450 of those negative results are given correctly to healthy people. What is the sensitivity?", options: ["60%", "65%", "70%", "75%"], a: 2, expText: "Total Negatives = 600. True Negatives = 450. False Negatives = 150.<br>Total Sick = 500. <i>True Positives</i> = 500 - 150 = 350.<br>Sensitivity = 350 / 500 = 70%.", table: { tp: 350, fp: 50, fn: 150, tn: 450, hl: 'tp' } },
+        { q: "There are 200 sick people and 800 healthy people in a study. The test returns 300 positive results overall. 150 of those positive results belong to sick people. What is the specificity?", options: ["75%", "81.25%", "85%", "90%"], a: 1, expText: "Total Positives = 300. True Positives = 150. False Positives = 150.<br>Total Healthy = 800. <i>True Negatives</i> = 800 - 150 = 650.<br>Specificity = 650 / 800 = 81.25%.", table: { tp: 150, fp: 150, fn: 50, tn: 650, hl: 'tn' } },
+        { q: "There are 300 sick people and 700 healthy people. The test missed 50 sick people. It accurately caught 250 sick people. It also cleared 600 healthy people accurately. What is the Positive Predictive Value?", options: ["60%", "66.7%", "71.4%", "75%"], a: 2, expText: "Total Healthy = 700. True Negatives = 600. Therefore, False Positives = 100.<br>True Positives = 250.<br>Total Positives = TP (250) + FP (100) = 350.<br>PPV = True Positives (250) / Total Positives (350) = 71.4%.", table: { tp: 250, fp: 100, fn: 50, tn: 600, hl: 'fp' } },
+        { q: "There are 150 sick people and 850 healthy people. The test accurately catches 100 sick people. It gave false alarms to 50 healthy people. What is the Negative Predictive Value?", options: ["90%", "92.5%", "94.1%", "95%"], a: 2, expText: "Total Sick = 150. True Positives = 100. Therefore, False Negatives = 50.<br>Total Healthy = 850. False Positives = 50. Therefore, True Negatives = 800.<br>Total Negatives = TN (800) + FN (50) = 850.<br>NPV = True Negatives (800) / Total Negatives (850) = 94.1%.", table: { tp: 100, fp: 50, fn: 50, tn: 800, hl: 'tn' } }
+    ];
+
+    let shuffledQuestions = [];
+    let currentQIndex = 0;
+    let score = 0;
+    let maxQuestions = quizData.length;
+
+    const quizContainer = document.getElementById('quiz-container');
+    const resultContainer = document.getElementById('result-container');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const progressText = document.getElementById('progress-text');
+    const currentScoreDisplay = document.getElementById('current-score');
+    
+    const feedbackArea = document.getElementById('feedback-area');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackText = document.getElementById('feedback-text');
+    const nextBtn = document.getElementById('next-btn');
+
+    function shuffleArray(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function initQuiz() {
+        shuffledQuestions = shuffleArray(quizData);
+        currentQIndex = 0;
+        score = 0;
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        feedbackArea.className = '';
+        nextBtn.style.display = 'none';
+        optionsContainer.innerHTML = '';
+
+        if (currentQIndex >= maxQuestions) {
+            endTest();
+            return;
+        }
+
+        const qData = shuffledQuestions[currentQIndex];
+        
+        progressText.innerText = `Question ${currentQIndex + 1} of ${maxQuestions}`;
+        questionText.innerText = qData.q;
+
+        qData.options.forEach((optText, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = optText;
+            btn.onclick = () => selectAnswer(i, btn);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function generateTableHTML(tData) {
+        return `
+        <table class="epi-table">
+            <tr>
+                <th></th>
+                <th>Sick (Cases)</th>
+                <th>Healthy (Controls)</th>
+                <th>Total</th>
+            </tr>
+            <tr>
+                <th>Test + (Exposed)</th>
+                <td class="${tData.hl === 'tp' ? 'highlight' : ''}">${tData.tp}</td>
+                <td class="${tData.hl === 'fp' ? 'highlight' : ''}">${tData.fp}</td>
+                <td><b>${tData.tp + tData.fp}</b></td>
+            </tr>
+            <tr>
+                <th>Test - (Unexposed)</th>
+                <td class="${tData.hl === 'fn' ? 'highlight' : ''}">${tData.fn}</td>
+                <td class="${tData.hl === 'tn' ? 'highlight' : ''}">${tData.tn}</td>
+                <td><b>${tData.fn + tData.tn}</b></td>
+            </tr>
+            <tr>
+                <th>Total</th>
+                <td><b>${tData.tp + tData.fn}</b></td>
+                <td><b>${tData.fp + tData.tn}</b></td>
+                <td><b>${tData.tp + tData.fp + tData.fn + tData.tn}</b></td>
+            </tr>
+        </table>`;
+    }
+
+    function selectAnswer(selectedIndex, btnElement) {
+        const qData = shuffledQuestions[currentQIndex];
+        const correctIndex = qData.a;
+        const isCorrect = (selectedIndex === correctIndex);
+
+        const allBtns = document.querySelectorAll('.option-btn');
+        allBtns.forEach((btn, i) => {
+            btn.disabled = true;
+            if (i === correctIndex) btn.classList.add('correct');
+        });
+
+        if (isCorrect) {
+            score++;
+            currentScoreDisplay.innerText = score;
+            feedbackTitle.innerText = "Correct!";
+            feedbackArea.className = "show-correct";
+        } else {
+            btnElement.classList.add('wrong');
+            feedbackTitle.innerText = "Incorrect.";
+            feedbackArea.className = "show-wrong";
+        }
+
+        feedbackText.innerHTML = `${qData.expText} ${generateTableHTML(qData.table)}`;
+        nextBtn.style.display = 'block';
+    }
+
+    function loadNextQuestion() {
+        currentQIndex++;
+        renderQuestion();
+    }
+
+    function endTest() {
+        quizContainer.classList.add('hidden');
+        document.getElementById('score-board').classList.add('hidden');
+        resultContainer.classList.remove('hidden');
+
+        document.getElementById('final-score-display').innerText = `${score} / ${currentQIndex}`;
+        
+        let percentage = currentQIndex === 0 ? 0 : Math.round((score / currentQIndex) * 100);
+        
+        let msg = "";
+        if (percentage >= 90) msg = "Astounding! You are a master at deducing 2x2 tables.";
+        else if (percentage >= 70) msg = "Great job! You navigated those tricky word problems well.";
+        else msg = "Good practice! Remember to map out your 2x2 table on scratch paper first.";
+
+        document.getElementById('final-message').innerText = `${msg} (${percentage}%)`;
+    }
+
+    window.onload = initQuiz;
+</script>
+
+</body>
+</html>
